@@ -1,0 +1,19 @@
+{
+  "name": "betterclist",
+  "authors": [
+    "gilzoide"
+  ],
+  "description": "Dynamic list backed by array compatible with betterC",
+  "license": "public license",
+  "configurations": [
+    {
+      "name": "library"
+    },
+    {
+      "name": "betterC",
+      "buildOptions": [
+        "betterC"
+      ]
+    }
+  ]
+}
