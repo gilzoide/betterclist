@@ -5,6 +5,9 @@ import std.range;
 
 struct List(T, long N = -1)
 {
+@nogc:
+    alias ElementType = T;
+
     /// Whether List has fixed size, which means it is backed by a static array
     enum isSized = N >= 0;
     static if (isSized)
@@ -125,6 +128,12 @@ struct List(T, long N = -1)
     }
     alias push = pushBack;
 
+    /// Push back elements on `list ~= args`
+    auto opOpAssign(string op : "~", Args...)(auto ref Args args)
+    {
+        return pushBack(args);
+    }
+
     /++
      + Pop the last element from List.
      + If initialize is true, popped slot is reinitialized to `T.init`.
@@ -202,7 +211,7 @@ unittest
     assert(l.back == 5);
     l.popBack();
     assert(l.length == l.capacity - 1);
-    assert(l.pushBack(500) == 0);
+    assert((l ~= 500) == 0);
     assert(l.full);
     assert(l.back == 500);
 
