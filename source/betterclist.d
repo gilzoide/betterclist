@@ -1,6 +1,6 @@
 module betterclist;
 
-import std.algorithm : copy;
+import std.algorithm;
 import std.range;
 
 struct List(T, long N = -1)
@@ -78,7 +78,8 @@ struct List(T, long N = -1)
      + Push a value in the end of List.
      + Returns: 0 if value was successfully inserted, 1 otherwise.
      +/
-    long pushBack(const T value)
+    long pushBack(U)(auto ref U value)
+    if (!isInputRange!U)
     {
         if (full)
         {
@@ -124,6 +125,10 @@ struct List(T, long N = -1)
     }
     alias push = pushBack;
 
+    /++
+     + Pop the last element from List.
+     + If initialize is true, popped slot is reinitialized to `T.init`.
+     +/
     void popBack(bool initialize = true)()
     {
         if (!empty)
@@ -135,7 +140,33 @@ struct List(T, long N = -1)
             }
         }
     }
+    /++
+     + Pop `count` elements from the back of the List.
+     + If initialize is true, popped slots are reinitialized to `T.init`.
+     +/
+    void popBack(bool initialize = true)(const size_t count)
+    {
+        auto minCount = min(count, usedLength);
+        static if (initialize)
+        {
+            usedSlice.retro.take(minCount).fill(T.init);
+        }
+        usedLength -= minCount;
+    }
     alias pop = popBack;
+
+    /++
+     + Clear all elements of List.
+     + If initialize is true, popped slots are reinitialized to `T.init`.
+     +/
+    void clear(bool initialize = true)()
+    {
+        static if (initialize)
+        {
+            usedSlice.fill(T.init);
+        }
+        usedLength = 0;
+    }
 }
 
 unittest
@@ -172,5 +203,12 @@ unittest
     l.popBack();
     assert(l.length == l.capacity - 1);
     assert(l.pushBack(500) == 0);
+    assert(l.full);
     assert(l.back == 500);
+
+    l.popBack(2);
+    assert(l.length == l.capacity - 2);
+    l.clear();
+    assert(l.empty);
+    l.popBack(42);
 }
