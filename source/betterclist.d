@@ -14,6 +14,12 @@ struct List(T, long N = -1)
     {
         /// Static array with capacity N that holds the List elements.
         T[N] array;
+
+        /// Construct List with initial elements.
+        this(Args...)(auto ref Args args)
+        {
+            pushBack(args);
+        }
     }
     else
     {
@@ -53,10 +59,12 @@ struct List(T, long N = -1)
         return usedLength == capacity;
     }
 
-    private auto usedSlice() inout
+    /// Get a slice for the used elements.
+    auto usedSlice() inout
     {
         return array[0 .. usedLength];
     }
+    /// Get a slice for the remaining elements.
     private auto remainingSlice() inout
     {
         return array[usedLength .. capacity];
@@ -105,14 +113,15 @@ struct List(T, long N = -1)
     {
         static if (hasLength!R)
         {
-            if (range.length > availableCapacity)
+            auto rangeLength = range.length;
+            if (rangeLength > availableCapacity)
             {
                 range.take(availableCapacity).copy(remainingSlice);
                 usedLength = capacity;
                 return cast(typeof(return))(range.length - availableCapacity);
             }
             range.copy(remainingSlice);
-            usedLength += range.length;
+            usedLength += rangeLength;
             return 0;
         }
         else
