@@ -354,9 +354,10 @@ unittest
 
     // Lists can also be backed by a slice
     import core.stdc.stdlib : malloc, free;
+    alias IntList = List!int;
+
     enum bufferSize = 8 * int.sizeof;
     void* buffer = malloc(bufferSize);
-    alias IntList = List!int;
 
     // Construction using void[]
     auto sliceList = IntList(buffer[0 .. bufferSize]);
@@ -366,7 +367,7 @@ unittest
     sliceList = IntList(cast(int[]) buffer[0 .. bufferSize]);
     assert(sliceList.capacity == 8);
 
-    // Construction using void pointer and explicit capacity (be careful!)
+    // Construction using void pointer and explicit buffer size (be careful!)
     sliceList = IntList(buffer, bufferSize);
     assert(sliceList.capacity == 8);
 
@@ -374,6 +375,6 @@ unittest
     sliceList = IntList(cast(int*) buffer, 8);
     assert(sliceList.capacity == 8);
 
-    // List backed by slices do not manage their own memory (TODO: dynamic List type)
+    // Lists backed by slices do not manage their own memory (TODO: memory mamaged (noGC, but destructor/auto resize) List type)
     free(buffer);
 }
