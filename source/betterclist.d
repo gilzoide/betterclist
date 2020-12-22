@@ -301,7 +301,7 @@ unittest
 {
     import betterclist : List;
 
-    // Lists may be backed by static array by passing the capacity to template
+    // Lists may be backed by static arrays by passing the capacity to template
     List!(int, 16) list;
     assert(list.capacity == 16);
 
@@ -316,6 +316,7 @@ unittest
 
     list.push(2, 3);  // push is an alias to pushBack. Several elements may be pushed at once
     assert(list[] == [1, 2, 3]);  // opIndex() returns the used slice
+    assert(list.availableCapacity == 13);
 
     list ~= 4;  // operator ~= also calls pushBack
     assert(list == [1, 2, 3, 4]);  // Lists are aliased to the used slice by `alias this`
@@ -326,6 +327,10 @@ unittest
     {
         writeln(value);
     }
+    // so does importing common range stuff
+    import std.range;
+    assert(list.front == 1);
+    assert(list.back == 4);
 
     list.popBack();  // pops the last value. If element type has elaborate detructors, reinitializes element to it's `.init` value
     assert(list == [1, 2, 3]);
@@ -337,7 +342,6 @@ unittest
     list.clear();  // pops all elements from List
     assert(list.empty);
 
-    import std.range : iota, repeat;
     list.push(iota(16));  // ranges can be pushed at once
     assert(list.full);
     auto result = list.push(1, 2);  // Trying to push more items than capacity permits is an error, but no exception is thrown...
@@ -370,6 +374,6 @@ unittest
     sliceList = IntList(cast(int*) buffer, 8);
     assert(sliceList.capacity == 8);
 
-    // List backed by slices do not manage their own memory (FIXME)
+    // List backed by slices do not manage their own memory (TODO: dynamic List type)
     free(buffer);
 }
