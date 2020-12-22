@@ -37,7 +37,7 @@ struct List(T, long N = -1)
         }
 
         /// Construct List with backing pointer and capacity and optional initial elements.
-        this(Args...)(T* backingArrayPointer, typeof(usedLength) capacity, auto ref Args args)
+        this(Args...)(T* backingArrayPointer, size_t capacity, auto ref Args args)
         {
             this(backingArrayPointer[0 .. capacity], args);
         }
@@ -49,14 +49,14 @@ struct List(T, long N = -1)
         }
 
         /// Construct List with backing buffer pointer and size and optional initial elements.
-        this(Args...)(void* backingArrayPointer, typeof(usedLength) bufferSize, auto ref Args args)
+        this(Args...)(void* backingArrayPointer, size_t bufferSize, auto ref Args args)
         {
             this(backingArrayPointer[0 .. bufferSize], args);
         }
     }
     /// Current used length, must be less than array's length.
     /// This is readonly accessible by the `length` property from used slice.
-    private typeof(array.length) usedLength = 0;
+    private size_t usedLength = 0;
 
     invariant
     {
