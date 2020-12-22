@@ -64,48 +64,48 @@ struct List(T, long N = -1)
     }
 
     /// List element capacity, which is the backing array's length.
-    @property size_t capacity() const
+    @property size_t capacity() const pure @safe nothrow
     {
         return array.length;
     }
 
     /// Available capacity for inserting elements.
-    @property size_t availableCapacity() const
+    @property size_t availableCapacity() const pure @safe nothrow
     {
         return capacity - usedLength;
     }
 
     /// Returns whether there are no elements in List.
-    @property bool empty() const
+    @property bool empty() const pure @safe nothrow
     {
         return usedLength == 0;
     }
 
     /// Returns whether List is full, that is, has no more available capacity.
-    @property bool full() const
+    @property bool full() const pure @safe nothrow
     {
         return usedLength == capacity;
     }
 
     /// Get a slice for the used elements.
-    auto usedSlice() inout
+    auto usedSlice() inout pure
     {
         return array[0 .. usedLength];
     }
     /// Get a slice for the remaining elements.
-    private auto remainingSlice() inout
+    private auto remainingSlice() inout pure
     {
         return array[usedLength .. capacity];
     }
 
     /// Get a slice for the used elements.
-    auto opIndex() inout
+    auto opIndex() inout pure
     {
         return usedSlice;
     }
     /// Index the slice of used elements.
-    auto ref opIndex(const size_t index) inout
-    in { assert(index < capacity); }
+    auto ref opIndex(const size_t index) inout pure
+    in { assert(index < usedLength); }
     do
     {
         return usedSlice[index];
