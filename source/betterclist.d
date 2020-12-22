@@ -2,6 +2,7 @@ module betterclist;
 
 import std.algorithm;
 import std.range;
+import std.traits;
 
 struct List(T, long N = -1)
 {
@@ -180,14 +181,14 @@ struct List(T, long N = -1)
 
     /++
      + Pop the last element from List.
-     + If initialize is true, popped slot is reinitialized to `T.init`.
+     + If element type has elaborate destructor, popped slot is reinitialized to `T.init`.
      +/
-    void popBack(bool initialize = true)()
+    void popBack()
     {
         if (!empty)
         {
             usedLength--;
-            static if (initialize)
+            static if (hasElaborateDestructor!T)
             {
                 array[usedLength] = T.init;
             }
@@ -195,12 +196,12 @@ struct List(T, long N = -1)
     }
     /++
      + Pop `count` elements from the back of the List.
-     + If initialize is true, popped slots are reinitialized to `T.init`.
+     + If element type has elaborate destructor, popped slots are reinitialized to `T.init`.
      +/
-    void popBack(bool initialize = true)(const size_t count)
+    void popBack(const size_t count)
     {
         auto minCount = min(count, usedLength);
-        static if (initialize)
+        static if (hasElaborateDestructor!T)
         {
             usedSlice.retro.take(minCount).fill(T.init);
         }
@@ -210,11 +211,11 @@ struct List(T, long N = -1)
 
     /++
      + Clear all elements of List.
-     + If initialize is true, popped slots are reinitialized to `T.init`.
+     + If element type has elaborate destructor, popped slots are reinitialized to `T.init`.
      +/
-    void clear(bool initialize = true)()
+    void clear()
     {
-        static if (initialize)
+        static if (hasElaborateDestructor!T)
         {
             usedSlice.fill(T.init);
         }
@@ -244,6 +245,8 @@ unittest
     assert(l.pushBack(iota(4)) == 0);
     assert(l.length == 5);
     assert(l == [10, 0, 1, 2, 3]);
+    assert(l[].sum == 16);
+    assert(l[$-2 .. $] == [2, 3]);
 
     int five() { return 5; }
     assert(l.pushBack(generate!five) < 0);
