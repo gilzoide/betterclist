@@ -25,6 +25,34 @@ struct List(T, long N = -1)
     {
         /// Slice with dynamic capacity that holds the List elements.
         T[] array;
+
+        /// Construct List with backing slice and optional initial elements.
+        this(Args...)(T[] backingSlice, auto ref Args args)
+        {
+            this.array = backingSlice;
+            static if (args.length > 0)
+            {
+                pushBack(args);
+            }
+        }
+
+        /// Construct List with backing pointer and capacity and optional initial elements.
+        this(Args...)(T* backingArrayPointer, typeof(usedLength) capacity, auto ref Args args)
+        {
+            this(backingArrayPointer[0 .. capacity], args);
+        }
+
+        /// Construct List with backing buffer slice and optional initial elements.
+        this(Args...)(void[] backingSlice, auto ref Args args)
+        {
+            this(cast(T[]) backingSlice, args);
+        }
+
+        /// Construct List with backing buffer pointer and size and optional initial elements.
+        this(Args...)(void* backingArrayPointer, typeof(usedLength) bufferSize, auto ref Args args)
+        {
+            this(backingArrayPointer[0 .. bufferSize], args);
+        }
     }
     /// Current used length, must be less than array's length.
     /// This is readonly accessible by the `length` property from used slice.
@@ -235,4 +263,31 @@ unittest
     l.clear();
     assert(l.empty);
     l.popBack(42);
+}
+
+unittest
+{
+    int[10] array = 42;
+    auto l = List!(int)(array[]);
+    assert(l.capacity == 10);
+    assert(l.length == 0);
+    assert(l[] == null);
+    assert(l == null);
+
+    auto l2 = List!(int)(array[], 0, 1);
+    assert(l2.capacity == 10);
+    assert(l2.length == 2);
+    assert(l2[] == [0, 1]);
+    assert(l2 == [0, 1]);
+}
+
+unittest
+{
+    import std.experimental.allocator.mallocator : Mallocator;
+    void[] buffer = Mallocator.instance.allocate(8 * int.sizeof);
+
+    auto l = List!(int)(buffer);
+    assert(l.capacity == 8);
+
+    Mallocator.instance.deallocate(buffer);
 }
