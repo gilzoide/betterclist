@@ -214,6 +214,8 @@ struct List(T, long N = -1)
      + If element type has elaborate destructor, popped slots are reinitialized to `T.init`.
      +/
     void clear()
+    out { assert(length == 0); assert(empty); }
+    do
     {
         static if (hasElaborateDestructor!T)
         {
