@@ -135,6 +135,13 @@ struct List(T, long N = -1)
             return range.empty ? 0 : -1;
         }
     }
+
+    /// Ditto
+    long pushBack(Args...)(auto ref Args args)
+    if (args.length > 1)
+    {
+        return pushBack(only(args));
+    }
     alias push = pushBack;
 
     /// Push back elements on `list ~= args`
@@ -189,8 +196,7 @@ struct List(T, long N = -1)
 
 unittest
 {
-    alias IntList = List!(int, 8);
-    IntList l;
+    List!(int, 8) l;
     assert(l.length == 0);
     assert(l[] == null);
     assert(l == null);
