@@ -6,7 +6,6 @@ import std.traits;
 
 struct List(T, long N = -1)
 {
-@nogc:
     alias ElementType = T;
 
     /// Whether List has fixed size, which means it is backed by a static array
@@ -64,55 +63,58 @@ struct List(T, long N = -1)
         assert(usedLength <= array.length);
     }
 
-    /// List element capacity, which is the backing array's length.
-    @property size_t capacity() const pure @safe nothrow
+    @nogc pure
     {
-        return array.length;
-    }
+        /// List element capacity, which is the backing array's length.
+        @property size_t capacity() const @safe nothrow
+        {
+            return array.length;
+        }
 
-    /// Available capacity for inserting elements.
-    @property size_t availableCapacity() const pure @safe nothrow
-    {
-        return capacity - usedLength;
-    }
+        /// Available capacity for inserting elements.
+        @property size_t availableCapacity() const @safe nothrow
+        {
+            return capacity - usedLength;
+        }
 
-    /// Returns whether there are no elements in List.
-    @property bool empty() const pure @safe nothrow
-    {
-        return usedLength == 0;
-    }
+        /// Returns whether there are no elements in List.
+        @property bool empty() const @safe nothrow
+        {
+            return usedLength == 0;
+        }
 
-    /// Returns whether List is full, that is, has no more available capacity.
-    @property bool full() const pure @safe nothrow
-    {
-        return usedLength == capacity;
-    }
+        /// Returns whether List is full, that is, has no more available capacity.
+        @property bool full() const @safe nothrow
+        {
+            return usedLength == capacity;
+        }
 
-    /// Get a slice for the used elements.
-    auto usedSlice() inout pure
-    {
-        return array[0 .. usedLength];
-    }
-    /// Get a slice for the remaining elements.
-    private auto remainingSlice() inout pure
-    {
-        return array[usedLength .. capacity];
-    }
+        /// Get a slice for the used elements.
+        auto usedSlice() inout
+        {
+            return array[0 .. usedLength];
+        }
+        /// Get a slice for the remaining elements.
+        private auto remainingSlice() inout
+        {
+            return array[usedLength .. capacity];
+        }
 
-    /// Get a slice for the used elements.
-    auto opIndex() inout pure
-    {
-        return usedSlice;
+        /// Get a slice for the used elements.
+        auto opIndex() inout
+        {
+            return usedSlice;
+        }
+        /// Index the slice of used elements.
+        auto ref opIndex(const size_t index) inout
+        in { assert(index < usedLength); }
+        do
+        {
+            return usedSlice[index];
+        }
+        /// Alias this allows operations to target used slice by default.
+        alias usedSlice this;
     }
-    /// Index the slice of used elements.
-    auto ref opIndex(const size_t index) inout pure
-    in { assert(index < usedLength); }
-    do
-    {
-        return usedSlice[index];
-    }
-    /// Alias this allows operations to target used slice by default.
-    alias usedSlice this;
 
     /++
      + Push a value in the end of List.
@@ -203,7 +205,7 @@ struct List(T, long N = -1)
         auto minCount = min(count, usedLength);
         static if (hasElaborateDestructor!T)
         {
-            usedSlice.retro.take(minCount).fill(T.init);
+            usedSlice[$ - minCount .. $] = T.init;
         }
         usedLength -= minCount;
     }
@@ -219,7 +221,7 @@ struct List(T, long N = -1)
     {
         static if (hasElaborateDestructor!T)
         {
-            usedSlice.fill(T.init);
+            usedSlice[] = T.init;
         }
         usedLength = 0;
     }
