@@ -227,6 +227,100 @@ struct List(T, long N = -1)
     }
 }
 
+/// Construct List from static array, inferring element type.
+List!(T, N) list(T, uint N)(const auto ref T[N] values)
+{
+    return typeof(return)(values[]);
+}
+///
+unittest
+{
+    int[3] values = [1, 2, 3];
+    assert(list(values) == values);
+}
+
+/// Construct List from slice.
+List!(T) list(T)(auto ref T[] array)
+{
+    typeof(return) l = array;
+    l.usedLength = array.length;
+    return l;
+}
+///
+unittest
+{
+    auto v = list([1, 2, 3]);
+    assert(v == [1, 2, 3]);
+}
+
+/// Construct List from elements, specifying element type.
+List!(U, Args.length) list(U, Args...)(const auto ref Args args)
+{
+    return typeof(return)(args);
+}
+///
+unittest
+{
+    const auto v = list!double(1, 2, 3);
+    assert(is(Unqual!(typeof(v)) == List!(double, 3)));
+    assert(v == [1.0, 2.0, 3.0]);
+}
+
+/// Construct List from elements, inferring element type.
+auto list(Args...)(const auto ref Args args)
+if (!is(CommonType!Args == void))
+{
+    return .list!(CommonType!Args)(args);
+}
+///
+unittest
+{
+    const auto v = list(1f, 2, 3);
+    assert(is(Unqual!(typeof(v)) == List!(float, 3)));
+    assert(v == [1f, 2f, 3f]);
+}
+
+/// Construct List with the specified length and type from Input Range.
+List!(U, N) list(U, size_t N, T)(scope T range)
+if (isInputRange!T)
+{
+    return typeof(return)(range.take(N));
+}
+///
+unittest
+{
+    const auto l = list!(double, 4)(repeat(42));
+    assert(l == [42.0, 42.0, 42.0, 42.0]);
+}
+
+/// Construct List with the specified length from Input Range, inferring element type.
+auto list(size_t N, T)(scope T range)
+if (isInputRange!T)
+{
+    return .list!(ElementType!T, N)(range);
+}
+///
+unittest
+{
+    const auto l = list!4(repeat(42));
+    assert(l == [42, 42, 42, 42]);
+}
+
+/// Construct List from Input Range at compile time.
+auto list(alias values)()
+if (isInputRange!(typeof(values)))
+{
+    return .list!(size_t(values.length))(values);
+}
+///
+unittest
+{
+    auto l = list!(iota(4).map!"a * a");
+    assert(l == [0, 1, 4, 9]);
+    l = list!(repeat(42).take(4));
+    assert(l == [42, 42, 42, 42]);
+}
+
 unittest
 {
     List!(int, 8) l;
