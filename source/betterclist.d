@@ -310,7 +310,8 @@ unittest
 auto list(alias values)()
 if (isInputRange!(typeof(values)))
 {
-    return .list!(size_t(values.length))(values);
+    enum l = .list!(size_t(values.length))(values);
+    return l;
 }
 ///
 unittest
