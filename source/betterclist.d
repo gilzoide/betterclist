@@ -112,6 +112,12 @@ struct List(T, long N = -1)
         {
             return usedSlice[index];
         }
+
+        /// Get used length.
+        size_t opDollar(const size_t pos : 0)() const
+        {
+            return usedLength;
+        }
         /// Alias this allows operations to target used slice by default.
         alias usedSlice this;
     }
